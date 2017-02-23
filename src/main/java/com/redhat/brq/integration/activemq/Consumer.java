@@ -42,7 +42,7 @@ public class Consumer {
 			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
 			// get destination object
-			Destination destination = session.createTopic(destinationName);
+			Destination destination = session.createQueue(destinationName);
 
 			// create consumer
 			MessageConsumer consumer = session.createConsumer(destination, selector);
