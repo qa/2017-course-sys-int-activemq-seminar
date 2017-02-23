@@ -11,6 +11,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.redhat.brq.integration.activemq.util.JmxUtils;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
@@ -32,8 +34,8 @@ import javax.xml.bind.JAXBException;
  *
  */
 public class Main {
-	public static void main(String[] args) throws JAXBException, JMSException, InterruptedException {
-
+	public static void main(String[] args) throws JMSException {
+ 
 		CommandLine cmd = parseCommandLine(args);
 
 		// storing arguments from command line
@@ -67,9 +69,12 @@ public class Main {
 			if (cmd.hasOption("c")) {
 				Consumer consumer = new Consumer("Consumer-1", connection, destinationName);
 				consumer.consumeMessages();
+				JmxUtils.waitUntilQueueIsEmpty(destinationName);
 			}
 
 		} catch (JMSException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			if (connection != null) {

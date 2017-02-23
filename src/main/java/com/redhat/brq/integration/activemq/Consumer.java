@@ -5,7 +5,9 @@ import java.util.concurrent.TimeUnit;
 import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBException;
@@ -43,21 +45,20 @@ public class Consumer {
 			// create consumer
 			MessageConsumer consumer = session.createConsumer(destination);
 
-			// synchronously receive messages until there are no messages in
-			boolean lastMessageWasNull = false;
-			while (!lastMessageWasNull) {
-				TextMessage jobMessage = (TextMessage) consumer.receive(TIMEOUT);
-				if (jobMessage == null) {
-					lastMessageWasNull = true;
-				} else {
-					Job job = XmlConverter.toObject(Job.class, jobMessage.getText());
-					executeJob(job);
+			// add  listener
+			consumer.setMessageListener(new MessageListener() {
+				@Override
+				public void onMessage(Message message) {
+					TextMessage jobMessage = (TextMessage) message;
+					try {
+						Job job = XmlConverter.toObject(Job.class, jobMessage.getText());
+						executeJob(job);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-			}
-			session.close();
+			});
 		} catch (JMSException e) {
-			e.printStackTrace();
-		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
 	}
