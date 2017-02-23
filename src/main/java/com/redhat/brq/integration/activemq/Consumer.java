@@ -26,12 +26,14 @@ public class Consumer {
 	private String id;
 	private Connection connection;
 	private String destinationName;
+	private String selector;
 
-	public Consumer(String id, Connection connection, String destinationName) {
+	public Consumer(String id, Connection connection, String destinationName, String selector) {
 		super();
 		this.id = id;
 		this.connection = connection;
 		this.destinationName = destinationName;
+		this.selector = selector;
 	}
 
 	public void consumeMessages() throws JMSException, InterruptedException {
@@ -43,7 +45,7 @@ public class Consumer {
 			Destination destination = session.createQueue(destinationName);
 
 			// create consumer
-			MessageConsumer consumer = session.createConsumer(destination);
+			MessageConsumer consumer = session.createConsumer(destination, selector);
 
 			// add  listener
 			consumer.setMessageListener(new MessageListener() {

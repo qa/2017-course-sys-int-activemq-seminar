@@ -24,8 +24,11 @@ import java.util.Random;
  *
  */
 public class Producer {
+
 	private Connection connection;
 	private String destinationName;
+	
+	private static final String DURATION_PROPERTY = "DURATION";
 
 	public Producer(Connection connection, String destinationName) {
 		super();
@@ -61,6 +64,7 @@ public class Producer {
 
 				// create Text message with XML representation of a job
 				Message message = session.createTextMessage(XmlConverter.toXml(Job.class, job));
+				message.setIntProperty(DURATION_PROPERTY, job.getDuration());
 				System.out.println("Producer: sending: " + job.toString() + " to destination " + destinationName);
 
 				// synchronously send message

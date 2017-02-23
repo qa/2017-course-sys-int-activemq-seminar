@@ -67,8 +67,10 @@ public class Main {
 
 			// consumer execution
 			if (cmd.hasOption("c")) {
-				Consumer consumer = new Consumer("Consumer-1", connection, destinationName);
+				Consumer consumer = new Consumer("Consumer-1", connection, destinationName, "DURATION <= 2");
+				Consumer consumer2 = new Consumer("Consumer-2", connection, destinationName, "DURATION > 2");
 				consumer.consumeMessages();
+				consumer2.consumeMessages();
 				JmxUtils.waitUntilQueueIsEmpty(destinationName);
 			}
 
