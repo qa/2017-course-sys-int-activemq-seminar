@@ -3,8 +3,14 @@ package com.redhat.brq.integration.activemq;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.xml.bind.JAXBException;
 
+import com.redhat.brq.integration.activemq.util.XmlConverter;
 import com.redhat.brq.integration.activemql.model.Job;
 
 /**
@@ -27,15 +33,33 @@ public class Consumer {
 	}
 
 	public void consumeMessages() throws JMSException, InterruptedException {
-		/*
-		 * TODO:
-		 * 1) create Session, Destination and MessageConsumer objects
-		 * 2) start the connection
-		 * 3) synchronously receive messages in loop until no message is received in TIMEOUT.
-		 *    -- Do not forget to specify timeout for receive method or application won't end.
-		 * 4) extract job from message using XmlConverter and then execute the job in the message using executeJob method.
-		 * 5) close the session
-		 */
+		try {
+			// create non-transacted session with auto acknowledge mode
+			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+			// get destination object
+			Destination destination = session.createQueue(destinationName);
+
+			// create consumer
+			MessageConsumer consumer = session.createConsumer(destination);
+
+			// synchronously receive messages until there are no messages in
+			boolean lastMessageWasNull = false;
+			while (!lastMessageWasNull) {
+				TextMessage jobMessage = (TextMessage) consumer.receive(TIMEOUT);
+				if (jobMessage == null) {
+					lastMessageWasNull = true;
+				} else {
+					Job job = XmlConverter.toObject(Job.class, jobMessage.getText());
+					executeJob(job);
+				}
+			}
+			session.close();
+		} catch (JMSException e) {
+			e.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
